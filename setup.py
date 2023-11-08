@@ -70,6 +70,7 @@ class CMakeExtension(Extension):
 
 CTFFILES = []
 
+#Removes additional args for cmake options to avoid issue with setuptools
 print(sys.argv)
 if len(sys.argv)>2:
     sys.argv, extra_args = sys.argv[:2], sys.argv[2:]
