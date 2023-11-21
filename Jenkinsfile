@@ -74,8 +74,12 @@ pipeline {
           if (isUnix()) {
             sh '''
                 module load matlab
-                module load python
+                // module load python
                 module load cmake
+                module load conda
+                conda create -n py37 -c conda-forge python=3.7 -y
+                conda activate py37
+                conda install -c conda-forge setuptools
                 python setup.py bdist_wheel
             '''
             archiveArtifacts artifacts: 'wheelhouse/*whl'
