@@ -113,13 +113,14 @@ pipeline {
         script {
           if (isUnix()) {
             sh '''
+                module load conda
                 eval "$(/opt/conda/bin/conda shell.bash hook)"
                 conda env remove -n py37
                 conda create -n py37 -c conda-forge python=3.7 -y
                 conda activate py37
                 conda install -c conda-forge scipy euphonic -y
                 python -m pip install brille
-                python -m pip install $(find wheelhouse -name "*cp37*whl"|tail -n1)
+                python -m pip install $(find dist -name "*cp37*whl"|tail -n1)
                 python test/run_test.py || true
                 test -f success
             '''
