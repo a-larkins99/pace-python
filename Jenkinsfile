@@ -81,7 +81,7 @@ pipeline {
                 conda install -c conda-forge setuptools
                 python setup.py bdist_wheel
             '''
-            archiveArtifacts artifacts: 'wheelhouse/*whl'
+            archiveArtifacts artifacts: 'dist/*whl'
           }
           else {
             powershell './cmake/build_pace_python.ps1'
