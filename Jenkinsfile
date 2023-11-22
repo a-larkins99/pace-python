@@ -114,6 +114,7 @@ pipeline {
           if (isUnix()) {
             sh '''
                 module load conda
+                module load matlab
                 eval "$(/opt/conda/bin/conda shell.bash hook)"
                 conda env remove -n py37
                 conda create -n py37 -c conda-forge python=3.7 -y
