@@ -147,6 +147,7 @@ pipeline {
                 module purge
                 module load conda
                 module load matlab/\$MATLAB_VERSION
+                module load gcc
                 eval "$(/opt/conda/bin/conda shell.bash hook)"
                 conda env remove -n py37
                 conda create -n py37 -c conda-forge python=\$PYTHON_VERSION -y
