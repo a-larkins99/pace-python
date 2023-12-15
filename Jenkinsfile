@@ -147,12 +147,11 @@ pipeline {
                 module purge
                 module load conda
                 module load matlab/\$MATLAB_VERSION
-                module load gcc
                 eval "$(/opt/conda/bin/conda shell.bash hook)"
                 conda env remove -n py37
                 conda create -n py37 -c conda-forge python=\$PYTHON_VERSION -y
                 conda activate py37
-                conda install -c conda-forge scipy euphonic -y
+                conda install -c conda-forge numpy scipy blas[build=openblas] euphonic -y
                 python -m pip install brille
                 python -m pip install $(find dist -name "*whl"|tail -n1)
                 timeout --signal 15 6m python test/run_test.py -v
