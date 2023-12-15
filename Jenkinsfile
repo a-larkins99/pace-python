@@ -154,7 +154,7 @@ pipeline {
                 conda install -c conda-forge scipy euphonic -y
                 python -m pip install brille
                 python -m pip install $(find dist -name "*whl"|tail -n1)
-                timeout --signal 2 6m python test/run_test.py -v
+                timeout --signal 15 6m python test/run_test.py -v
                 test -f success
             '''
           }
