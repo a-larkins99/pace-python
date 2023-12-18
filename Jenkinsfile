@@ -28,9 +28,6 @@ properties([
     )
   ])
 ])
-script {
-  def ENV_NAME = "py" + PYTHON_VERSION.replace(".","")
-}
 
 def get_agent(String jobname) {
   if (jobname.contains('linux')) {
@@ -97,6 +94,10 @@ pipeline {
 
   agent {
     label get_agent(env.JOB_BASE_NAME)
+  }
+
+  script {
+    def ENV_NAME = "py" + PYTHON_VERSION.replace(".","")
   }
 
   stages {
