@@ -95,10 +95,12 @@ pipeline {
   agent {
     label get_agent(env.JOB_BASE_NAME)
   }
-
-  script {
-    def ENV_NAME = "py" + PYTHON_VERSION.replace(".","")
+  environment {
+    script {
+      def ENV_NAME = "py" + PYTHON_VERSION.replace(".","")
+    }
   }
+
 
   stages {
 
