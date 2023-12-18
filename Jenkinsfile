@@ -89,6 +89,11 @@ def setGitHubBuildStatus(String status, String message) {
     }
 }
 
+def name_conda_env(String python_version) {
+  def env_name = "py" + python_version.replace(".","")
+  return env_name
+}
+
 
 pipeline {
 
@@ -96,9 +101,7 @@ pipeline {
     label get_agent(env.JOB_BASE_NAME)
   }
   environment {
-    script {
-      def ENV_NAME = "py" + PYTHON_VERSION.replace(".","")
-    }
+      ENV_NAME = name_conda_env(${PYTHON_VERSION})
   }
 
 
