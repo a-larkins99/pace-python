@@ -29,7 +29,7 @@ properties([
   ])
 ])
 
-String ENV_NAME = "py" + PYTHON_VERSION.replace(".","")
+def ENV_NAME = "py" + PYTHON_VERSION.replace(".","")
 
 def get_agent(String jobname) {
   if (jobname.contains('linux')) {
