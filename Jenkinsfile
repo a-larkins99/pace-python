@@ -101,10 +101,11 @@ pipeline {
     label get_agent(env.JOB_BASE_NAME)
   }
 
+  environment {
+    ENV_NAME = name_conda_env(env.PYTHON_VERSION)
+  }
+
   stages {
-    environment {
-      ENV_NAME = name_conda_env(${PYTHON_VERSION})
-    }
 
     stage("Build-Pace-Python") {
       steps {
