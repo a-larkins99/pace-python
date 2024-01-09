@@ -8,9 +8,9 @@ properties([
       description: 'Agent to run the build on.',
       trim: true
     ),
-    string(
-      name: 'PYTHON_VERSION',
-      defaultValue: '3.8',
+    choice(
+      name: 'PYTHON_FILTER',
+      choices: ['all','3.7','3.8','3.9','3.10','3.11']
       description: 'Version of python to run the build with.',
       trim: true
     ),
@@ -104,6 +104,12 @@ pipeline {
 
   // IDEA: could apply a filter with all as an option
   matrix {
+
+    when { anyOf {
+      expression { params.PYTHON_FILTER == 'all' }
+      expression { params.PYTHON_FILTER == env.PYTHON_VERSION }
+    } }
+
     axes {
       axis {
         name 'PYTHON_VERSION'
