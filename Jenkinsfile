@@ -49,7 +49,7 @@ def get_github_token() {
 
 def setGitHubBuildStatus(String status, String message) {
     script {
-        withCredentials([string(credentialsId: 'PacePython_API_Token',
+        withCredentials([string(credentialsId: 'GitHub_API_Token',
                 variable: 'api_token')]) {
           if (isUnix()) {
             sh """
