@@ -10,7 +10,7 @@ properties([
     ),
     choice(
       name: 'PYTHON_FILTER',
-      choices: ['all','3.7','3.8','3.9','3.10','3.11']
+      choices: ['all','3.7','3.8','3.9','3.10','3.11'],
       description: 'Version of python to run the build with.',
       trim: true
     ),
