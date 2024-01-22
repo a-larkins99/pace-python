@@ -97,13 +97,14 @@ def name_conda_env(String python_version) {
 
 pipeline {
 
-  //NOTE: may need moving to within matrix
-  agent {
-    label get_agent(env.JOB_BASE_NAME)
-  }
+  agent none
 
   // IDEA: could apply a filter with all as an option
   matrix {
+
+    agent {
+      label get_agent(env.JOB_BASE_NAME)
+    }
 
     when { anyOf {
       expression { params.PYTHON_FILTER == 'all' }
