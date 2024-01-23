@@ -99,163 +99,165 @@ pipeline {
 
   agent none
 
-  // IDEA: could apply a filter with all as an option
-  matrix {
+  stages {
+    stage('Build-Install-Test') {
 
-    agent {
-      label get_agent(env.JOB_BASE_NAME)
-    }
+      matrix {
 
-    when { anyOf {
-      expression { params.PYTHON_FILTER == 'all' }
-      expression { params.PYTHON_FILTER == env.PYTHON_VERSION }
-    } }
+        agent {
+          label get_agent(env.JOB_BASE_NAME)
+        }
 
-    axes {
-      axis {
-        name 'PYTHON_VERSION'
-        values '3.7','3.8','3.9','3.10','3.11'
-      }
-    }
+        when { anyOf {
+          expression { params.PYTHON_FILTER == 'all' }
+          expression { params.PYTHON_FILTER == env.PYTHON_VERSION }
+        } }
 
-    environment {
-      ENV_NAME = name_conda_env(env.PYTHON_VERSION)
-    }
-
-    stages {
-
-      stage("Build-Pace-Python") {
-        steps {
-          script {
-            if (isUnix()) {
-              sh '''
-                  module purge
-                  module load matlab/\$MATLAB_VERSION
-                  module load cmake
-                  module load conda
-                  module load gcc/\$GCC_VERSION
-                  conda create -n \$ENV_NAME -c conda-forge python=\$PYTHON_VERSION -y
-                  conda activate \$ENV_NAME
-                  conda install -c conda-forge setuptools
-                  python setup.py bdist_wheel
-              '''
-              archiveArtifacts artifacts: 'dist/*whl'
-            }
-            else {
-              powershell ''' 
-                  conda create -n \$env:ENV_NAME -c conda-forge python=\$env:PYTHON_VERSION -y
-                  conda activate \$env:ENV_NAME
-                  conda install -c conda-forge setuptools
-                  python setup.py bdist_wheel -DMatlab_ROOT_DIR=/opt/modules-common/software/MATLAB/R\$env:MATLAB_VERSION
-              '''
-              archiveArtifacts artifacts: 'dist/*whl'
-            }
+        axes {
+          axis {
+            name 'PYTHON_VERSION'
+            values '3.7','3.8','3.9','3.10','3.11'
           }
         }
-      }
 
-      stage("Get-Pace-Python-Demo") {
-        steps {
-          dir('demo') {
-            checkout([
-              $class: 'GitSCM',
-              branches: [[name: "refs/heads/main"]],
-              extensions: [[$class: 'WipeWorkspace']],
-              userRemoteConfigs: [[url: 'https://github.com/pace-neutrons/pace-python-demo']]
-            ])
-          }
-        }
-      }
-
-      stage("Run-Pace-Python-Tests") {
         environment {
-          LD_LIBRARY_PATH = "/opt/modules-common/software/MATLAB/R2020b/runtime/glnxa64:/opt/modules-common/software/MATLAB/R2020b/bin/glnxa64"
-          LD_PRELOAD = "/opt/modules-common/software/MATLAB/R2020b/sys/os/glnxa64/libiomp5.so"
+          ENV_NAME = name_conda_env(env.PYTHON_VERSION)
         }
-        steps {
-          script {
-            if (isUnix()) {
-              sh '''
-                  module purge
-                  module load conda
-                  module load matlab/\$MATLAB_VERSION
-                  eval "$(/opt/conda/bin/conda shell.bash hook)"
-                  conda env remove -n \$ENV_NAME
-                  conda create -n \$ENV_NAME -c conda-forge python=\$PYTHON_VERSION -y
-                  conda activate \$ENV_NAME
-                  pip install numpy scipy euphonic --no-input
-                  export MKL_NUM_THREADS=1
-                  python -m pip install brille
-                  python -m pip install $(find dist -name "*whl"|tail -n1)
-                  timeout --signal 15 6m python test/run_test.py -v
-                  test -f success
-              '''
-            }
-            else {
-              powershell '''
-                  conda env remove -n \$env:ENV_NAME
-                  conda create -n \$env:ENV_NAME -c conda-forge python=\$env:PYTHON_VERSION -y
-                  conda activate \$env:ENV_NAME
-                  conda install -c conda-forge scipy euphonic -y
-                  python -m pip install brille
-                  python -m pip install ./dist/*.whl
-                  python test/run_test.py -v
-              '''
+
+        stages {
+
+          stage("Build-Pace-Python") {
+            steps {
+              script {
+                if (isUnix()) {
+                  sh '''
+                      module purge
+                      module load matlab/\$MATLAB_VERSION
+                      module load cmake
+                      module load conda
+                      module load gcc/\$GCC_VERSION
+                      conda create -n \$ENV_NAME -c conda-forge python=\$PYTHON_VERSION -y
+                      conda activate \$ENV_NAME
+                      conda install -c conda-forge setuptools
+                      python setup.py bdist_wheel
+                  '''
+                  archiveArtifacts artifacts: 'dist/*whl'
+                }
+                else {
+                  powershell ''' 
+                      conda create -n \$env:ENV_NAME -c conda-forge python=\$env:PYTHON_VERSION -y
+                      conda activate \$env:ENV_NAME
+                      conda install -c conda-forge setuptools
+                      python setup.py bdist_wheel -DMatlab_ROOT_DIR=/opt/modules-common/software/MATLAB/R\$env:MATLAB_VERSION
+                  '''
+                  archiveArtifacts artifacts: 'dist/*whl'
+                }
+              }
             }
           }
+
+          stage("Get-Pace-Python-Demo") {
+            steps {
+              dir('demo') {
+                checkout([
+                  $class: 'GitSCM',
+                  branches: [[name: "refs/heads/main"]],
+                  extensions: [[$class: 'WipeWorkspace']],
+                  userRemoteConfigs: [[url: 'https://github.com/pace-neutrons/pace-python-demo']]
+                ])
+              }
+            }
+          }
+
+          stage("Run-Pace-Python-Tests") {
+            environment {
+              LD_LIBRARY_PATH = "/opt/modules-common/software/MATLAB/R2020b/runtime/glnxa64:/opt/modules-common/software/MATLAB/R2020b/bin/glnxa64"
+              LD_PRELOAD = "/opt/modules-common/software/MATLAB/R2020b/sys/os/glnxa64/libiomp5.so"
+            }
+            steps {
+              script {
+                if (isUnix()) {
+                  sh '''
+                      module purge
+                      module load conda
+                      module load matlab/\$MATLAB_VERSION
+                      eval "$(/opt/conda/bin/conda shell.bash hook)"
+                      conda env remove -n \$ENV_NAME
+                      conda create -n \$ENV_NAME -c conda-forge python=\$PYTHON_VERSION -y
+                      conda activate \$ENV_NAME
+                      pip install numpy scipy euphonic --no-input
+                      export MKL_NUM_THREADS=1
+                      python -m pip install brille
+                      python -m pip install $(find dist -name "*whl"|tail -n1)
+                      timeout --signal 15 6m python test/run_test.py -v
+                      test -f success
+                  '''
+                }
+                else {
+                  powershell '''
+                      conda env remove -n \$env:ENV_NAME
+                      conda create -n \$env:ENV_NAME -c conda-forge python=\$env:PYTHON_VERSION -y
+                      conda activate \$env:ENV_NAME
+                      conda install -c conda-forge scipy euphonic -y
+                      python -m pip install brille
+                      python -m pip install ./dist/*.whl
+                      python test/run_test.py -v
+                  '''
+                }
+              }
+            }
+          }
+
+          // stage("Push release") {
+          //   environment {
+          //     GITHUB_TOKEN = get_github_token()
+          //   }
+          //   steps {
+          //     script {
+          //       if (env.ref_type == 'tag') {
+          //         if (isUnix()) {
+          //           sh '''
+          //             podman run -v `pwd`:/mnt localhost/pace_python_builder /mnt/installer/jenkins_compiler_installer.sh
+          //             eval "$(/opt/conda/bin/conda shell.bash hook)"
+          //             conda activate py37
+          //             pip install requests pyyaml
+          //             python release.py --github --notest
+          //           '''
+          //         } else {
+          //           powershell './cmake/run_release.ps1'
+          //         }
+          //       }
+          //     }
+          //   }
+          // }
+
         }
       }
+    }
+  }
+  post {
 
-      // stage("Push release") {
-      //   environment {
-      //     GITHUB_TOKEN = get_github_token()
-      //   }
-      //   steps {
-      //     script {
-      //       if (env.ref_type == 'tag') {
-      //         if (isUnix()) {
-      //           sh '''
-      //             podman run -v `pwd`:/mnt localhost/pace_python_builder /mnt/installer/jenkins_compiler_installer.sh
-      //             eval "$(/opt/conda/bin/conda shell.bash hook)"
-      //             conda activate py37
-      //             pip install requests pyyaml
-      //             python release.py --github --notest
-      //           '''
-      //         } else {
-      //           powershell './cmake/run_release.ps1'
-      //         }
-      //       }
-      //     }
-      //   }
-      // }
-
+    success {
+        script {
+          setGitHubBuildStatus("success", "Successful")
+        }
     }
 
-    post {
-
-      success {
-          script {
-            setGitHubBuildStatus("success", "Successful")
-          }
-      }
-
-      unsuccessful {
-        withCredentials([string(credentialsId: 'pace_python_email', variable: 'pace_python_email')]) {
-          script {
-              //mail (
-              //  to: "${pace_python_email}",
-              //  subject: "PACE-Python pipeline failed: ${env.JOB_BASE_NAME}",
-              //  body: "See ${env.BUILD_URL}"
-              //)
-              setGitHubBuildStatus("failure", "Unsuccessful")
-          }
+    unsuccessful {
+      withCredentials([string(credentialsId: 'pace_python_email', variable: 'pace_python_email')]) {
+        script {
+            //mail (
+            //  to: "${pace_python_email}",
+            //  subject: "PACE-Python pipeline failed: ${env.JOB_BASE_NAME}",
+            //  body: "See ${env.BUILD_URL}"
+            //)
+            setGitHubBuildStatus("failure", "Unsuccessful")
         }
       }
+    }
 
-      cleanup {
-        deleteDir()
-      }
-
+    cleanup {
+      deleteDir()
     }
   }
 }
