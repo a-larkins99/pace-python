@@ -3,7 +3,7 @@
 properties([
   parameters([
     string(
-      name: 'Agent',
+      name: 'AGENT',
       defaultValue: 'rocky8',
       description: 'Agent to run the build on.',
       trim: true
@@ -232,32 +232,33 @@ pipeline {
           // }
 
         }
-      }
-    }
-  }
-  post {
 
-    success {
-        script {
-          setGitHubBuildStatus("success", "Successful")
+        post {
+
+          success {
+              script {
+                setGitHubBuildStatus("success", "Successful")
+              }
+          }
+
+          unsuccessful {
+            withCredentials([string(credentialsId: 'pace_python_email', variable: 'pace_python_email')]) {
+              script {
+                  //mail (
+                  //  to: "${pace_python_email}",
+                  //  subject: "PACE-Python pipeline failed: ${env.JOB_BASE_NAME}",
+                  //  body: "See ${env.BUILD_URL}"
+                  //)
+                  setGitHubBuildStatus("failure", "Unsuccessful")
+              }
+            }
+          }
+
+          cleanup {
+            deleteDir()
+          }
         }
-    }
-
-    unsuccessful {
-      withCredentials([string(credentialsId: 'pace_python_email', variable: 'pace_python_email')]) {
-        script {
-            //mail (
-            //  to: "${pace_python_email}",
-            //  subject: "PACE-Python pipeline failed: ${env.JOB_BASE_NAME}",
-            //  body: "See ${env.BUILD_URL}"
-            //)
-            setGitHubBuildStatus("failure", "Unsuccessful")
-        }
       }
-    }
-
-    cleanup {
-      deleteDir()
     }
   }
 }
