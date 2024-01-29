@@ -204,6 +204,7 @@ pipeline {
                       python -m pip install brille
                       python -m pip install ./dist/*.whl
                       python test/run_test.py -v
+                      conda env remove -n \$env:ENV_NAME
                   '''
                 }
               }
