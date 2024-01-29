@@ -149,6 +149,7 @@ pipeline {
                       conda activate \$env:ENV_NAME
                       conda install -c conda-forge setuptools
                       python setup.py bdist_wheel -DMatlab_ROOT_DIR=/opt/modules-common/software/MATLAB/R\$env:MATLAB_VERSION
+                      python --version
                   '''
                   archiveArtifacts artifacts: 'dist/*whl'
                 }
