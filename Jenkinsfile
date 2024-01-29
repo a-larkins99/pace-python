@@ -145,6 +145,7 @@ pipeline {
                 }
                 else {
                   powershell ''' 
+                      conda env remove -n \$env:ENV_NAME
                       Import-Module "C:/ProgramData/miniconda3/shell/condabin/Conda.psm1"
                       conda create -n \$env:ENV_NAME -c conda-forge python=\$env:PYTHON_VERSION -y
                       Enter-CondaEnvironment \$env:ENV_NAME
