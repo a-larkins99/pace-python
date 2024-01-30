@@ -148,6 +148,7 @@ pipeline {
                       Import-Module "C:/ProgramData/miniconda3/shell/condabin/Conda.psm1"
                       conda create --prefix ./\$env:ENV_NAME -c conda-forge python=\$env:PYTHON_VERSION -y
                       Enter-CondaEnvironment ./\$env:ENV_NAME
+                      conda env list
                       conda install -c conda-forge setuptools
                       python setup.py bdist_wheel -DMatlab_ROOT_DIR=/opt/modules-common/software/MATLAB/R\$env:MATLAB_VERSION
                       python --version
