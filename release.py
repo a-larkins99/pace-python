@@ -59,7 +59,8 @@ def release_github(test=True):
 def release_pypi(test=True):
     # Downloads wheels from github and upload to PyPI
     response = requests.get(
-        'https://api.github.com/repos/pace-neutrons/pace-python/releases')
+        'https://api.github.com/repos/pace-neutrons/pace-python/releases',
+        timeout=60)
     # Get the latest release
     releases = response.json()
     ids = [r['id'] for r in releases]
@@ -101,7 +102,8 @@ def _create_gh_release(payload):
     response = requests.post(
         'https://api.github.com/repos/pace-neutrons/pace-python/releases',
         data=json.dumps(payload),
-        headers={"Authorization": "token " + os.environ["GITHUB_TOKEN"]})
+        headers={"Authorization": "token " + os.environ["GITHUB_TOKEN"]},
+        timeout=60)
     print(response.text)
     if response.status_code != 201:
         raise RuntimeError('Could not create release')
@@ -114,7 +116,8 @@ def _upload_assets(upload_url):
     if os.path.exists('dist'):
         wheelpaths = [os.path.join('dist', ff) for ff in os.listdir('dist')]
     elif os.path.exists('wheelhouse'):
-        wheelpaths = [os.path.join('wheelhouse', ff) for ff in os.listdir('wheelhouse') if 'manylinux' in ff]
+        wheelpaths = [os.path.join('wheelhouse', ff) for ff
+                      in os.listdir('wheelhouse') if 'manylinux' in ff]
     if wheelpaths is not None:
         for wheelpath in wheelpaths:
             wheelfile = os.path.basename(wheelpath)
@@ -124,7 +127,7 @@ def _upload_assets(upload_url):
                     f"{upload_url}?name={wheelfile}",
                     headers={"Authorization": "token " + os.environ["GITHUB_TOKEN"],
                              "Content-type": "application/octet-stream"},
-                    data=f.read())
+                    data=f.read(), timeout=60)
                 print(upload_response.text)
 
     _, installer_path, _ = next(os.walk('installer'))
@@ -140,7 +143,7 @@ def _upload_assets(upload_url):
                 f"{upload_url}?name={installer_file}",
                 headers={"Authorization": "token " + os.environ["GITHUB_TOKEN"],
                          "Content-type": "application/octet-stream"},
-                data=f.read())
+                data=f.read(), timeout=60)
             print(upload_response.text)
     return None
 
