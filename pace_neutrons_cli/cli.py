@@ -46,8 +46,8 @@ def _set_env(input_path='', force_reload=False):
                 raise RuntimeError('Could not find Matlab MCR in known locations.\n' \
                                    'Please rerun with the option --matlab-dir to the MCR location.\n' \
                                    'This location will be cached for future lookup.\n' \
-                                   'Alternatively, you can rerun with the --install-mcr option to install ' \
-                                   'the compiler runtime.\n' \
+                                   'Alternatively, you can rerun with the --install-mcr option ' \
+                                   'to install the compiler runtime.\n' \
                                    'This takes approximately 15-30min and will be silent\n')
         if cf.IsFirstRun:
             cf.IsFirstRun = False

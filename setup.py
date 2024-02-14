@@ -105,7 +105,7 @@ class CMakeBuild(build_ext):
                 cmake_args += ['-A', 'x64']
             else:
                 cmake_args += ['-A', 'Win32']
-				
+
         if is_mingw():
             cmake_args += ['-G','Unix Makefiles'] # Must be two entries to work
 
@@ -177,8 +177,9 @@ KEYWORDARGS = dict(
     ext_modules=[CMakeExtension('pace_neutrons')],
     packages=['pace_neutrons', 'pace_neutrons_cli', 'euphonic_sqw_models'],
     package_data={'pace_neutrons':CTFFILES},
-    install_requires = ['six>=1.12.0', 'numpy>=1.7.1', 'appdirs>=1.4.4', 'ipython>=3.2.1', 'requests', 'psutil>=0.6.0',
-                        'matplotlib>=2.0.0', 'euphonic[phonopy_reader]>=0.6.2', 'brille>=0.5.4', 'libpymcr>=0.1.5'],
+    install_requires = ['six>=1.12.0', 'numpy>=1.7.1', 'appdirs>=1.4.4', 'ipython>=3.2.1',
+                        'requests', 'psutil>=0.6.0', 'matplotlib>=2.0.0', 'brille>=0.5.4',
+                        'euphonic[phonopy_reader]>=0.6.2', 'libpymcr>=0.1.5'],
     extras_require = {'interactive':['matplotlib>=2.2.0',],},
     cmdclass=cmdclass,
     entry_points={'console_scripts': [

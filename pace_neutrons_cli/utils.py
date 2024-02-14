@@ -14,7 +14,8 @@ def get_runtime_version():
     except ImportError:
         pass
     # Looks in the Matlab generated __init__ file to determine the required Matlab version
-    with open(os.path.join(os.path.dirname(__file__), '..', '..', 'pace', '__init__.py'), 'r') as pace_init:
+    with open(os.path.join(os.path.dirname(__file__), '..', '..', 'pace',
+                            '__init__.py'), 'r') as pace_init:
         for line in pace_init:
             if 'RUNTIME_VERSION_W_DOTS' in line:
                 return line.split('=')[1].strip().replace("'",'')
@@ -37,7 +38,8 @@ def get_matlab_from_registry(version=None):
             if version is not None:
                 versions = [v for v in versions if v == version]
             for v in versions:
-                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, f'SOFTWARE\\MathWorks\\{installation}\\{v}') as key:
+                with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                                    f'SOFTWARE\\MathWorks\\{installation}\\{v}') as key:
                     retval.append(winreg.QueryValueEx(key, 'MATLABROOT')[0])
     return retval
 
@@ -144,8 +146,9 @@ class PaceConfiguration(object):
 class DetectMatlab(object):
     def __init__(self, version):
         self.ver = version
-        self.PLATFORM_DICT = {'Windows': ['PATH', 'dll', ''], 'Linux': ['LD_LIBRARY_PATH', 'so', 'libmw'],
-                 'Darwin': ['DYLD_LIBRARY_PATH', 'dylib', 'libmw']}
+        self.PLATFORM_DICT = {'Windows': ['PATH', 'dll', ''],
+                                'Linux': ['LD_LIBRARY_PATH', 'so', 'libmw'],
+                                'Darwin': ['DYLD_LIBRARY_PATH', 'dylib', 'libmw']}
         # Note that newer Matlabs are 64-bit only
         self.ARCH_DICT = {'Windows': {'64bit': 'win64', '32bit': 'pcwin32'},
                           'Linux': {'64bit': 'glnxa64', '32bit': 'glnx86'},
@@ -160,10 +163,12 @@ class DetectMatlab(object):
         self.arch = self.ARCH_DICT[self.system][platform.architecture()[0]]
         self.required_dirs = self.REQ_DIRS[self.system]
         if self.system == 'Windows':
-            self.file_to_find = ''.join((self.lib_prefix, 'mclmcrrt', self.ver.replace('.','_'), '.', self.ext))
+            self.file_to_find = ''.join((self.lib_prefix, 'mclmcrrt',
+                                         self.ver.replace('.','_'), '.', self.ext))
             self.sep = ';'
         elif self.system == 'Linux':
-            self.file_to_find = ''.join((self.lib_prefix, 'mclmcrrt', '.', self.ext, '.', self.ver))
+            self.file_to_find = ''.join((self.lib_prefix, 'mclmcrrt', '.',
+                                         self.ext, '.', self.ver))
             self.sep = ':'
         elif self.system == 'Darwin':
             self.file_to_find = ''.join((self.lib_prefix, 'mclmcrrt', '.', self.ver, '.', self.ext))
@@ -196,9 +201,11 @@ class DetectMatlab(object):
             return None
 
     def guess_path(self, mlPath=[]):
-        GUESSES = {'Windows': [r'C:\Program Files\MATLAB', r'C:\Program Files (x86)\MATLAB', 
-                               r'C:\Program Files\MATLAB\MATLAB Runtime', r'C:\Program Files (x86)\MATLAB\MATLAB Runtime'],
-                   'Linux': ['/usr/local/MATLAB', '/opt/MATLAB', '/opt', '/usr/local/MATLAB/MATLAB_Runtime'],
+        GUESSES = {'Windows': [r'C:\Program Files\MATLAB', r'C:\Program Files (x86)\MATLAB',
+                               r'C:\Program Files\MATLAB\MATLAB Runtime', 
+                               r'C:\Program Files (x86)\MATLAB\MATLAB Runtime'],
+                   'Linux': ['/usr/local/MATLAB', '/opt/MATLAB', '/opt', 
+                             '/usr/local/MATLAB/MATLAB_Runtime'],
                    'Darwin': ['/Applications/MATLAB']}
         if self.system == 'Windows':
             mlPath += get_matlab_from_registry(self.ver) + GUESSES['Windows']
@@ -233,7 +240,8 @@ class DetectMatlab(object):
             mlPath = self.guess_path()
         if mlPath is None:
             raise RuntimeError('Could not find Matlab')
-        req_matlab_dirs = self.sep.join([os.path.join(mlPath, sub, self.arch) for sub in self.required_dirs])
+        req_matlab_dirs = self.sep.join([os.path.join(mlPath, sub, self.arch)
+                                         for sub in self.required_dirs])
         if self.path_var not in os.environ:
             os.environ[self.path_var] = req_matlab_dirs
         else:
@@ -245,8 +253,8 @@ def checkPath(runtime_version, mlPath):
     """
     Sets the environmental variables for Win, Mac, Linux
 
-    :param mlPath: Path to the SDK i.e. '/MATLAB/MATLAB_Runtime/v96' or to the location where matlab is installed
-    (MATLAB root directory)
+    :param mlPath: Path to the SDK i.e. '/MATLAB/MATLAB_Runtime/v96' or 
+    to the location where matlab is installed (MATLAB root directory)
     :return: None
     """
 
@@ -264,7 +272,8 @@ def checkPath(runtime_version, mlPath):
             if mlPath is None:
                 raise RuntimeError('Cannot find Matlab')
             else:
-                ld_path = obj.sep.join([os.path.join(mlPath, sub, obj.arch) for sub in obj.required_dirs])
+                ld_path = obj.sep.join([os.path.join(mlPath, sub, obj.arch)
+                                         for sub in obj.required_dirs])
                 os.environ[obj.path_var] = ld_path
                 print('Set ' + os.environ.get(obj.path_var))
         else:
@@ -330,7 +339,8 @@ def install_MCR(interactive=False):
     if response.status_code != 200:
         raise RuntimeError('Could not query Github for list of assets')
     response = json.loads(response.text)
-    INSTALLERS = {'Windows':'pace_neutrons_installer_win32.exe', 'Linux':'pace_neutrons_installer_linux.install'}
+    INSTALLERS = {'Windows':'pace_neutrons_installer_win32.exe',
+                   'Linux':'pace_neutrons_installer_linux.install'}
     system = platform.system()
     try:
         installer_name = INSTALLERS[system]
@@ -339,7 +349,7 @@ def install_MCR(interactive=False):
     try:
         installer_url = [a['url'] for a in response if installer_name in a['name']][0]
     except IndexError:
-        raise RuntimeError(f'Could not find the installer in the Github release')
+        raise RuntimeError('Could not find the installer in the Github release')
     if interactive:
         lic_file = os.path.join(os.path.dirname(__file__), '..', 'pace_neutrons', 'MCR_license.txt')
         with open(lic_file, 'r') as lic:
