@@ -5,7 +5,6 @@ import re
 import sys
 import requests
 import subprocess
-from importlib_resources import open_text
 import yaml
 from pace_neutrons_cli.utils import release_exists, download_github
 
