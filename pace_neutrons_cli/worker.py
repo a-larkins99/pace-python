@@ -3,8 +3,9 @@ import os
 import re
 import platform
 import argparse
-from .utils import DetectMatlab, get_runtime_version
 from pace_neutrons.IPythonMagics import Redirection
+from .utils import DetectMatlab, get_runtime_version
+
 
 
 class LogfileRedirection(Redirection):
@@ -60,7 +61,7 @@ def _parse_control_string(cs):
     if isinstance(cs, list):
         cs = ' '.join(cs)
     if "('" in cs and "')" in cs:
-        match = re.match("[\w\d\.\\\/:]*\('([\w\d\-]*)'\).*", cs)
+        match = re.match(r"[\w\d\.\\\/:]*\('([\w\d\-]*)'\).*", cs)
         if match:
             return match.group(1)
     if '/' in cs or '\\' in cs:
