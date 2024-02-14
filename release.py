@@ -29,13 +29,13 @@ def release_github(test=True):
 
     pace_ver = 'v' + __version__
     version_dict = {}
-    version_dict['CHANGELOG.md'] = re.findall('# \[(.*)\]\(http', changelog)[0]
+    version_dict['CHANGELOG.md'] = re.findall(r'# \[(.*)\]\(http', changelog)[0]
     version_dict['CITATION.cff'] = 'v' + citation['version']
     for ver_name, ver in version_dict.items():
         if pace_ver != ver:
             raise Exception(f'version mismatch! __version__: {pace_ver}; {ver_name}: {ver}')
 
-    desc = re.search('# \[v[0-9\.]*\]\(http.*?\)\n(.*?)# \[v[0-9\.]*\]', changelog,
+    desc = re.search(r'# \[v[0-9\.]*\]\(http.*?\)\n(.*?)# \[v[0-9\.]*\]', changelog,
                      re.DOTALL | re.MULTILINE).groups()[0].strip()
     payload = {
         "tag_name": pace_ver,
@@ -52,7 +52,7 @@ def release_github(test=True):
         if not upload_url:
             upload_url = _create_gh_release(payload)
         else:
-            upload_url = re.search('^(.*)\{\?', upload_url).groups()[0]
+            upload_url = re.search(r'^(.*)\{\?', upload_url).groups()[0]
         _upload_assets(upload_url)
 
 
@@ -105,7 +105,7 @@ def _create_gh_release(payload):
     print(response.text)
     if response.status_code != 201:
         raise RuntimeError('Could not create release')
-    upload_url = re.search('^(.*)\{\?', json.loads(response.text)['upload_url']).groups()[0]
+    upload_url = re.search(r'^(.*)\{\?', json.loads(response.text)['upload_url']).groups()[0]
     return upload_url
 
 
