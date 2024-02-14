@@ -3,8 +3,8 @@ import json
 import os
 import re
 import sys
-import requests
 import subprocess
+import requests
 import yaml
 from pace_neutrons_cli.utils import release_exists, download_github
 
@@ -73,7 +73,7 @@ def release_pypi(test=True):
     headers = {"Accept":"application/octet-stream"}
     for asset in latest['assets']:
         if asset['name'].endswith('whl'):
-            print('Downloading %s' % (asset['name']))
+            print(f'Downloading {asset["name"]}')
             localfile = os.path.join('pace_wheelhouse', asset['name'])
             download_github(asset['url'], localfile, use_auth=False)
     if not test:
