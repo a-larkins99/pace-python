@@ -278,7 +278,7 @@ def release_exists(tag_name, retval='upload_url', use_auth=True):
         headers = {"Authorization": "token " + os.environ["GITHUB_TOKEN"]}
     response = requests.get(
         'https://api.github.com/repos/pace-neutrons/pace-python/releases',
-        headers=headers)
+        headers=headers, timeout=60)
     if response.status_code != 200:
         raise RuntimeError('Could not query Github if release exists')
     response = json.loads(response.text)
@@ -296,7 +296,7 @@ def download_github(url, local_filename=None, use_auth=True):
         headers["Authorization"] = "token " + os.environ["GITHUB_TOKEN"]
     if not local_filename:
         local_filename = url.split('/')[-1]
-    with requests.get(url, stream=True, headers=headers) as r:
+    with requests.get(url, stream=True, headers=headers, timeout=60) as r:
         with open(local_filename, 'wb') as f:
             for chunk in r.iter_content(chunk_size=8192):
                 f.write(chunk)
@@ -326,7 +326,7 @@ def install_MCR(interactive=False):
     assets_url = release_exists('v' + __version__, retval='assets_url', use_auth=False)
     if not assets_url:
         raise RuntimeError(f'No Github release exists for pace_neutrons version {__version__}')
-    response = requests.get(assets_url)
+    response = requests.get(assets_url, timeout=60)
     if response.status_code != 200:
         raise RuntimeError('Could not query Github for list of assets')
     response = json.loads(response.text)
