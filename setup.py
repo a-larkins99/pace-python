@@ -2,15 +2,14 @@ import os
 import re
 import sys
 import glob
-import subprocess
 import pkgutil
 import shutil
-import versioneer
 from sysconfig import get_platform
 from subprocess import CalledProcessError, check_output, check_call, run, PIPE
 from distutils.version import LooseVersion
-from setuptools import setup, Extension, find_packages
+from setuptools import setup, Extension
 from setuptools.command.build_ext import build_ext
+import versioneer
 
 # We can use cmake provided from pip which (normally) gets installed at /bin
 # Except that in the manylinux builds it's placed at /opt/python/[version]/bin/
