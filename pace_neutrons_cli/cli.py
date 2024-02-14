@@ -1,10 +1,12 @@
-import sys, os
+import os
+import sys
 import platform
-from .utils import DetectMatlab, get_runtime_version, PaceConfiguration, get_mantid
 import argparse
+from .utils import DetectMatlab, get_runtime_version, PaceConfiguration, get_mantid
+
 
 def _prepend_QT_libs():
-    import os
+    # import os
     # We only need to care about PyQt5 since Matlab only bundles Qt5,
     # and Spyder removed support for PySide2
     # Addendum: Spyder reinstated PySide2 support in Aug 2021,
@@ -24,7 +26,7 @@ def _prepend_QT_libs():
             os.environ['LD_LIBRARY_PATH'] = libdir
             return True
     return False
-    
+
 
 def _set_env(input_path='', force_reload=False):
     cf = PaceConfiguration()
