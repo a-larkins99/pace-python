@@ -272,7 +272,7 @@ def checkPath(runtime_version, mlPath):
 
 
 def release_exists(tag_name, retval='upload_url', use_auth=True):
-    import requests, json, re
+    import requests, json
     headers = {}
     if use_auth:
         headers = {"Authorization": "token " + os.environ["GITHUB_TOKEN"]}
