@@ -2,8 +2,9 @@ import os
 import sys
 import glob
 import platform
-import six
 from pathlib import Path
+import six
+
 
 
 def get_runtime_version():
@@ -205,7 +206,7 @@ class DetectMatlab(object):
             if os.path.isdir(possible_dir):
                 rv = self.find_version(possible_dir)
                 if rv is not None:
-                   return rv
+                    return rv
         return None
 
     def guess_from_env(self):

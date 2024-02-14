@@ -1,4 +1,6 @@
-import sys, os, re
+import sys
+import os
+import re
 import platform
 import argparse
 from .utils import DetectMatlab, get_runtime_version
