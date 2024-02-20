@@ -61,18 +61,16 @@ def _parse_control_string(cs):
     if isinstance(cs, list):
         cs = ' '.join(cs)
     if "('" in cs and "')" in cs:
-        match = re.match(r"[\w\d\.\\\/:]*\('([\w\d\-]*)'\).*", cs)
-        if match:
+        if match := re.match(r"[\w\d\.\\\/:]*\('([\w\d\-]*)'\).*", cs):
             return match.group(1)
     if '/' in cs or '\\' in cs:
         cs = ''
     return cs
 
 def main(args=None):
-    is_windows = platform.system() == 'Windows'
     args = _get_args().parse_args(args if args else sys.argv[1:])
     # Run set env first before any more imports because we might need to restart the process
-    mlPath = os.environ['PACE_MCR_DIR'] if 'PACE_MCR_DIR' in os.environ else ''
+    mlPath = os.environ.get('PACE_MCR_DIR', '') #os.environ['PACE_MCR_DIR'] if 'PACE_MCR_DIR' in os.environ else ''
     _set_env(mlPath)
     cs = _parse_control_string(args.ctrl_str)
     if args.ctrl_str == '':

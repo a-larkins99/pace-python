@@ -14,8 +14,7 @@ def get_runtime_version():
     except ImportError:
         pass
     # Looks in the Matlab generated __init__ file to determine the required Matlab version
-    with open(os.path.join(os.path.dirname(__file__), '..', '..', 'pace',
-                            '__init__.py'), 'r') as pace_init:
+    with open(Path(__file__).resolve().parents[3] / 'pace' / '__init__.py', 'r', encoding='utf-8') as pace_init:
         for line in pace_init:
             if 'RUNTIME_VERSION_W_DOTS' in line:
                 return line.split('=')[1].strip().replace("'",'')
@@ -52,7 +51,7 @@ def get_mantid():
     except ImportError:
         pass
     else:
-        return os.path.abspath(os.path.join(os.path.dirname(mantid.__file__), '..', '..'))
+        return Path(mantid.__file__).parents[3].resolve()
     # On Windows can look at the registry
     try:
         import winreg
@@ -78,8 +77,8 @@ def get_mantid():
                'Linux': ['/opt/Mantid', '/opt/mantidnightly', '/usr/local/Mantid'],
                'Darwin': ['/Applications/Mantid']}
     for possible_dir in GUESSES[platform.system()]:
-        if os.path.isdir(possible_dir):
-            if os.path.exists(os.path.join(possible_dir, 'lib', 'mantid', '__init__.py')):
+        if Path(possible_dir).is_dir():
+            if (Path(possible_dir) / 'lib' / 'mantid' / '__init__.py').exists():
                 return possible_dir
     return None
 
@@ -89,11 +88,11 @@ class PaceConfiguration(object):
         import configparser
         import appdirs
         self.config_dir = appdirs.user_config_dir('pace_neutrons')
-        if not os.path.exists(self.config_dir):
-            os.makedirs(self.config_dir)
-        self.config_file = os.path.join(self.config_dir, 'pace.ini')
+        if not Path(self.config_dir).exists():
+            Path(self.config_dir).mkdir()
+        self.config_file = Path(self.config_dir) / 'pace.ini'
         self.config = configparser.ConfigParser()
-        if os.path.exists(self.config_file):
+        if self.config_file.exists():
             self.config.read(self.config_file)
         if 'pace' not in self.config:
             self.config['pace'] = {}
@@ -154,7 +153,7 @@ class DetectMatlab(object):
                           'Linux': {'64bit': 'glnxa64', '32bit': 'glnx86'},
                           'Darwin': {'64bit': 'maci64', '32bit': 'maci'}}
         # https://uk.mathworks.com/help/compiler/mcr-path-settings-for-run-time-deployment.html
-        DIRS = ['runtime', os.path.join('sys', 'os'), 'bin', os.path.join('extern', 'bin')]
+        DIRS = ['runtime', Path('sys') / 'os', 'bin', Path('extern') / 'bin']
         self.REQ_DIRS = {'Windows':[DIRS[0]], 'Darwin':DIRS[:3], 'Linux':DIRS}
         self.system = platform.system()
         if self.system not in self.PLATFORM_DICT:
@@ -179,13 +178,13 @@ class DetectMatlab(object):
     def find_version(self, root_dir):
         def find_file(path, filename, max_depth=3):
             """ Finds a file, will return first match"""
-            for depth in range(max_depth + 1):
-                dirglobs = f'*{os.sep}'*depth
-                files = glob.glob(f'{path}{os.sep}{dirglobs}{filename}')
-                files = list(filter(os.path.isfile, files))
-                if len(files) > 0:
-                    return files[0]
-            return None
+
+            pths = Path(path).rglob(filename)
+            return next((file for file in pths
+                         if file.is_file() and
+                         len(file.relative_to(path).parents) < max_depth),
+                           None)
+
         lib_file = find_file(root_dir, self.file_to_find)
         if lib_file is not None:
             lib_path = Path(lib_file)
@@ -194,13 +193,14 @@ class DetectMatlab(object):
             ml_subdir = lib_path.parts[-3]
             if ml_subdir != 'runtime':
                 self.ver = ml_subdir
-            ml_path = os.path.abspath(lib_path.parents[2])
+            ml_path = lib_path.parents[2].resolve()
             print(f'Found Matlab {self.ver} {self.arch} at {ml_path}')
             return ml_path
         else:
             return None
 
-    def guess_path(self, mlPath=[]):
+    def guess_path(self, mlPath = None):
+        mlPath = mlPath if mlPath else []
         GUESSES = {'Windows': [r'C:\Program Files\MATLAB', r'C:\Program Files (x86)\MATLAB',
                                r'C:\Program Files\MATLAB\MATLAB Runtime', 
                                r'C:\Program Files (x86)\MATLAB\MATLAB Runtime'],
@@ -210,7 +210,7 @@ class DetectMatlab(object):
         if self.system == 'Windows':
             mlPath += get_matlab_from_registry(self.ver) + GUESSES['Windows']
         for possible_dir in mlPath + GUESSES[self.system]:
-            if os.path.isdir(possible_dir):
+            if Path("possible_dir").is_dir():
                 rv = self.find_version(possible_dir)
                 if rv is not None:
                     return rv
@@ -220,18 +220,18 @@ class DetectMatlab(object):
         ld_path = os.getenv(self.path_var)
         if ld_path is None: return None
         for possible_dir in ld_path.split(self.sep):
-            if os.path.exists(os.path.join(possible_dir, self.file_to_find)):
-                return os.path.abspath(os.path.join(possible_dir, '..', '..'))
+            if (Path(possible_dir) / self.file_to_find).exists():
+                return Path(possible_dir.resolve().parents[1])
         return None
 
     def env_not_set(self):
         # Determines if the environment variables required by the MCR are set
         if self.path_var not in os.environ:
             return True
-        rt = os.path.join('runtime', self.arch)
+        rt = Path('runtime') / self.arch
         pv = os.getenv(self.path_var).split(self.sep)
         for path in [dd for dd in pv if rt in dd]:
-            if self.find_version(os.path.join(path,'..','..')) is not None:
+            if self.find_version(Path(path).parent.parent) is not None:
                 return False
         return True
 
@@ -240,7 +240,7 @@ class DetectMatlab(object):
             mlPath = self.guess_path()
         if mlPath is None:
             raise RuntimeError('Could not find Matlab')
-        req_matlab_dirs = self.sep.join([os.path.join(mlPath, sub, self.arch)
+        req_matlab_dirs = self.sep.join([Path(mlPath) / sub / self.arch
                                          for sub in self.required_dirs])
         if self.path_var not in os.environ:
             os.environ[self.path_var] = req_matlab_dirs
@@ -262,9 +262,8 @@ def checkPath(runtime_version, mlPath):
     obj = DetectMatlab(runtime_version)
 
     if mlPath:
-        if not os.path.exists(os.path.join(mlPath)):
-            if not os.path.exists(mlPath):
-                raise FileNotFoundError(f'Input Matlab folder {mlPath} not found')
+        if not Path(mlPath).exists():
+            raise FileNotFoundError(f'Input Matlab folder {mlPath} not found')
     else:
         mlPath = obj.guess_from_env()
         if mlPath is None:
@@ -351,7 +350,7 @@ def install_MCR(interactive=False):
     except IndexError:
         raise RuntimeError('Could not find the installer in the Github release')
     if interactive:
-        lic_file = os.path.join(os.path.dirname(__file__), '..', 'pace_neutrons', 'MCR_license.txt')
+        lic_file = Path(__file__).parent.parent / 'pace_neutrons' / 'MCR_license.txt'
         with open(lic_file, 'r') as lic:
             print(lic.read())
         p = input('Do agree with the above license? ("y" or "n")')
@@ -362,7 +361,7 @@ def install_MCR(interactive=False):
                'A copy can be found at:\n'
                'https://github.com/pace-neutrons/pace-python/tree/main/pace_neutrons/MCR_license.txt'))
     with tempfile.TemporaryDirectory() as dd:
-        installer_file = os.path.join(dd, installer_name)
+        installer_file = Path(dd) / installer_name
         download_github(installer_url, local_filename=installer_file, use_auth=False)
         if system != 'Windows':
             os.chmod(installer_file, 0o755)
@@ -371,8 +370,8 @@ def install_MCR(interactive=False):
         print('This could take some time (15-30min)')
         print('------------------------------------')
         proc = subprocess.run([installer_file, '-mode', 'silent', '-agreeToLicense', 'yes'],
-                              capture_output=True)
+                              capture_output=True, text=True, encoding="utf-8")
         if proc.returncode != 0:
-            print(proc.stderr.decode())
+            print(proc.stderr)
             raise RuntimeError('Could not install the Matlab MCR')
-        print(proc.stdout.decode())
+        print(proc.stdout)

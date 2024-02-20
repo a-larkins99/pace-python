@@ -6,6 +6,7 @@ import sys
 import subprocess
 import requests
 import yaml
+from pathlib import Path
 from pace_neutrons_cli.utils import release_exists, download_github
 
 def main():
@@ -65,17 +66,15 @@ def release_pypi(test=True):
     releases = response.json()
     ids = [r['id'] for r in releases]
     latest = [r for r in releases if r['id'] == max(ids)][0]
+
     # Creates a custom wheelhouse folder
-    try:
-        os.mkdir('pace_wheelhouse')
-    except FileExistsError:
-        pass
+    Path("pace_wheelhouse").mkdir(exist_ok=True)
+
     # Loops through assets and downloads all the wheels
-    headers = {"Accept":"application/octet-stream"}
     for asset in latest['assets']:
         if asset['name'].endswith('whl'):
             print(f'Downloading {asset["name"]}')
-            localfile = os.path.join('pace_wheelhouse', asset['name'])
+            localfile = Path("./pace_wheelhouse") / asset['name']
             download_github(asset['url'], localfile, use_auth=False)
     if not test:
         subprocess.run(['twine', 'upload', 'pace_wheelhouse/*'])
@@ -113,14 +112,13 @@ def _create_gh_release(payload):
 
 def _upload_assets(upload_url):
     wheelpaths = None
-    if os.path.exists('dist'):
-        wheelpaths = [os.path.join('dist', ff) for ff in os.listdir('dist')]
-    elif os.path.exists('wheelhouse'):
-        wheelpaths = [os.path.join('wheelhouse', ff) for ff
-                      in os.listdir('wheelhouse') if 'manylinux' in ff]
+    if (dists := Path("dists")).exists():
+        wheelpaths = [ff for ff in dists.iterdir()]
+    elif (wheelhouse := Path('wheelhouse')).exists():
+        wheelpaths = [ff for ff in wheelhouse.iterdir() if 'manylinux' in ff]
     if wheelpaths is not None:
         for wheelpath in wheelpaths:
-            wheelfile = os.path.basename(wheelpath)
+            wheelfile = wheelpath.name
             print(f'Uploading wheel {wheelpath}')
             with open(wheelpath, 'rb') as f:
                 upload_response = requests.post(

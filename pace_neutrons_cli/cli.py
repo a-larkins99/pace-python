@@ -1,5 +1,6 @@
 import os
 import sys
+from pathlib import Path
 import platform
 import argparse
 from .utils import DetectMatlab, get_runtime_version, PaceConfiguration, get_mantid
@@ -17,7 +18,7 @@ def _prepend_QT_libs():
     except ImportError:
         pass
     else:
-        libdir = os.path.join(os.path.dirname(PyQt5.__file__), 'Qt', 'lib')
+        libdir = Path(PyQt5.__file__) / 'Qt' / 'lib'
         if 'LD_LIBRARY_PATH' in os.environ:
             if libdir not in os.environ['LD_LIBRARY_PATH']:
                 os.environ['LD_LIBRARY_PATH'] = libdir + ':' + os.environ['LD_LIBRARY_PATH']
@@ -111,7 +112,7 @@ def main(args=None):
         if not mantid_dir:
             raise RuntimeError('Cannot find Mantid or Mantid is not installed')
         for dirs in ['plugins', 'lib', 'bin']:
-            sys.path.insert(0, os.path.join(mantid_dir, dirs))
+            sys.path.insert(0, Path(mantid_dir) / dirs)
         if args.mantid:
             import mantidqt.dialogs.errorreports.main
             sys.argv[1:] = ['--exitcode=0', '--application=workbench']
