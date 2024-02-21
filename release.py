@@ -77,7 +77,7 @@ def release_pypi(test=True):
             localfile = Path("./pace_wheelhouse") / asset['name']
             download_github(asset['url'], localfile, use_auth=False)
     if not test:
-        subprocess.run(['twine', 'upload', 'pace_wheelhouse/*'])
+        subprocess.run(['twine', 'upload', 'pace_wheelhouse/*'], check = True)
 
 
 def get_parser():

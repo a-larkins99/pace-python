@@ -326,7 +326,7 @@ def install_MCR(interactive=False):
     except ImportError:
         # Try to pip install it internally
         proc = subprocess.run([sys.executable, '-m', 'pip', 'install', '--user', 'requests', 'json'],
-                              capture_output=True)
+                              capture_output=True, check = False)
         if proc.returncode != 0:
             raise RuntimeError('Could not import or install the requests module to communicate with github')
         print(proc.stdout.decode())
@@ -370,7 +370,7 @@ def install_MCR(interactive=False):
         print('This could take some time (15-30min)')
         print('------------------------------------')
         proc = subprocess.run([installer_file, '-mode', 'silent', '-agreeToLicense', 'yes'],
-                              capture_output=True, text=True, encoding="utf-8")
+                              capture_output=True, text=True, encoding="utf-8", check = False)
         if proc.returncode != 0:
             print(proc.stderr)
             raise RuntimeError('Could not install the Matlab MCR')
