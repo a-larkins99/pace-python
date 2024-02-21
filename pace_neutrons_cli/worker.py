@@ -11,7 +11,7 @@ from .utils import DetectMatlab, get_runtime_version
 class LogfileRedirection(Redirection):
     def __init__(self, logfile):
         self.target = sys.__stdout__.fileno()
-        self.output = open(logfile, 'w')
+        self.output = open(logfile, 'w', encoding='utf-8')
         self.ip = None
         self.flush = lambda: self.output.flush()
         self.pre()

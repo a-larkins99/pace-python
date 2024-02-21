@@ -23,9 +23,9 @@ def main():
 
 def release_github(test=True):
     from pace_neutrons import __version__
-    with open('CHANGELOG.md') as f:
+    with open('CHANGELOG.md', encoding='utf-8') as f:
         changelog = f.read()
-    with open('CITATION.cff') as f:
+    with open('CITATION.cff', encoding='utf-8') as f:
         citation = yaml.safe_load(f)
 
     pace_ver = 'v' + __version__

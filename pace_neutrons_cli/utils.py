@@ -128,7 +128,7 @@ class PaceConfiguration(object):
         self.config['pace']['IsFirstRun'] = str(val)
 
     def save(self):
-        with open(self.config_file, 'w') as f:
+        with open(self.config_file, 'w', encoding='utf-8') as f:
             self.config.write(f)
 
     def __enter__(self):
@@ -351,7 +351,7 @@ def install_MCR(interactive=False):
         raise RuntimeError('Could not find the installer in the Github release')
     if interactive:
         lic_file = Path(__file__).parent.parent / 'pace_neutrons' / 'MCR_license.txt'
-        with open(lic_file, 'r') as lic:
+        with open(lic_file, 'r', encoding='utf-8') as lic:
             print(lic.read())
         p = input('Do agree with the above license? ("y" or "n")')
         if not p.lower().startswith('y'):
